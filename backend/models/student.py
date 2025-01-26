@@ -35,13 +35,35 @@ class Student(db.Model):
 
     @staticmethod
     def from_dict(data):
-        return Student(
-            student_name=data.get('studentName'),
-            parents_name=data.get('parentsName'),
-            roll_number=data.get('rollNumber'),
-            class_name=data.get('class'),
-            section=data.get('section'),
-            school_joined_date=datetime.strptime(data.get('schoolJoinedDate'), '%Y-%m-%d').date() if data.get('schoolJoinedDate') else None,
-            date_of_birth=datetime.strptime(data.get('dateOfBirth'), '%Y-%m-%d').date() if data.get('dateOfBirth') else None,
-            phone_number=data.get('phoneNumber')
-        )
+        if not data:
+            raise ValueError("No data provided")
+
+        required_fields = ['studentName', 'parentsName', 'rollNumber', 'class', 'section', 
+                         'schoolJoinedDate', 'dateOfBirth', 'phoneNumber']
+        
+        # Check for required fields
+        for field in required_fields:
+            if not data.get(field):
+                raise ValueError(f"Missing required field: {field}")
+
+        def parse_date(date_str):
+            if not date_str:
+                return None
+            try:
+                return datetime.strptime(date_str, '%Y-%m-%d').date()
+            except ValueError as e:
+                raise ValueError(f"Invalid date format for {date_str}. Please use YYYY-MM-DD format.")
+
+        try:
+            return Student(
+                student_name=data['studentName'],
+                parents_name=data['parentsName'],
+                roll_number=data['rollNumber'],
+                class_name=data['class'],
+                section=data['section'],
+                school_joined_date=parse_date(data['schoolJoinedDate']),
+                date_of_birth=parse_date(data['dateOfBirth']),
+                phone_number=data['phoneNumber']
+            )
+        except Exception as e:
+            raise ValueError(f"Error creating student: {str(e)}")

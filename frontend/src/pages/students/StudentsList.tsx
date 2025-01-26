@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { studentServices } from '../../services/studentServices';
-import { Student } from '../../types/student';
+import { Student } from '../../interfaces/Student';
 
 const StudentsList: React.FC = () => {
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ const StudentsList: React.FC = () => {
       try {
         const response = await studentServices.deleteStudent(id);
         if (response.success) {
-          setStudents(students.filter(student => student.id !== id));
+          setStudents(prevStudents => prevStudents.filter(student => student.id !== id));
         } else {
           setError(response.error || 'Failed to delete student');
         }
@@ -85,12 +85,10 @@ const StudentsList: React.FC = () => {
               <table className="min-w-full divide-y divide-gray-300">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Roll No.</th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Student Name</th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Name</th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Roll Number</th>
                     <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Class</th>
                     <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Section</th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Parents Name</th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Phone</th>
                     <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
                       <span className="sr-only">Actions</span>
                     </th>
@@ -99,12 +97,10 @@ const StudentsList: React.FC = () => {
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {students.map((student) => (
                     <tr key={student.id}>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{student.studentName}</td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{student.rollNumber}</td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">{student.studentName}</td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{student.class}</td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{student.section}</td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{student.parentsName}</td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{student.phoneNumber}</td>
                       <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                         <button
                           onClick={() => navigate(`/students/edit/${student.id}`)}

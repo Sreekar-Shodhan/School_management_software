@@ -8,12 +8,12 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-students_bp = Blueprint('students', __name__, url_prefix='/api/students')
+students_bp = Blueprint('students', __name__, url_prefix='/api')
 
-@students_bp.route('', methods=['GET'])
+@students_bp.route('/students', methods=['GET'])
 def get_students():
     try:
-        logger.debug("GET /api/students - Starting request")
+        logger.debug("GET /students - Starting request")
         logger.debug(f"Request args: {request.args}")
         
         # Get query parameters
@@ -50,17 +50,17 @@ def get_students():
             'limit': limit
         }
         
-        logger.debug("Successfully processed GET /api/students request")
+        logger.debug("Successfully processed GET /students request")
         return jsonify(result), 200
 
     except Exception as e:
         logger.error(f"Error in get_students: {str(e)}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
-@students_bp.route('/<int:student_id>', methods=['GET'])
+@students_bp.route('/students/<int:student_id>', methods=['GET'])
 def get_student(student_id):
     try:
-        logger.debug(f"GET /api/students/{student_id} - Starting request")
+        logger.debug(f"GET /students/{student_id} - Starting request")
         student = Student.query.get_or_404(student_id)
         logger.debug(f"Found student: {student.student_name}")
         return jsonify({'data': student.to_dict()}), 200
@@ -68,31 +68,50 @@ def get_student(student_id):
         logger.error(f"Error in get_student: {str(e)}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
-@students_bp.route('', methods=['POST'])
+@students_bp.route('/students', methods=['POST'])
 def create_student():
     try:
-        logger.debug("POST /api/students - Starting request")
-        logger.debug(f"Request data: {request.get_json()}")
-        
+        logger.debug("POST /students - Starting request")
         data = request.get_json()
         
-        # Create new student using from_dict method
-        student = Student.from_dict(data)
+        if not data:
+            logger.error("No data provided in request")
+            return jsonify({'error': 'No data provided'}), 400
+            
+        logger.debug(f"Request data: {data}")
         
-        db.session.add(student)
-        db.session.commit()
-        
-        logger.debug(f"Created new student: {student.student_name}")
-        return jsonify({'data': student.to_dict()}), 201
+        try:
+            # Create new student using from_dict method
+            student = Student.from_dict(data)
+            db.session.add(student)
+            db.session.commit()
+            
+            logger.debug(f"Created new student: {student.student_name}")
+            return jsonify({
+                'success': True,
+                'data': student.to_dict(),
+                'message': 'Student created successfully'
+            }), 201
+            
+        except ValueError as ve:
+            logger.error(f"Validation error: {str(ve)}")
+            return jsonify({
+                'success': False,
+                'error': str(ve)
+            }), 400
+            
     except Exception as e:
         logger.error(f"Error in create_student: {str(e)}", exc_info=True)
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({
+            'success': False,
+            'error': 'Internal server error occurred'
+        }), 500
 
-@students_bp.route('/<int:student_id>', methods=['PUT'])
+@students_bp.route('/students/<int:student_id>', methods=['PUT'])
 def update_student(student_id):
     try:
-        logger.debug(f"PUT /api/students/{student_id} - Starting request")
+        logger.debug(f"PUT /students/{student_id} - Starting request")
         logger.debug(f"Request data: {request.get_json()}")
         
         student = Student.query.get_or_404(student_id)
@@ -125,10 +144,10 @@ def update_student(student_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-@students_bp.route('/<int:student_id>', methods=['DELETE'])
+@students_bp.route('/students/<int:student_id>', methods=['DELETE'])
 def delete_student(student_id):
     try:
-        logger.debug(f"DELETE /api/students/{student_id} - Starting request")
+        logger.debug(f"DELETE /students/{student_id} - Starting request")
         student = Student.query.get_or_404(student_id)
         
         db.session.delete(student)

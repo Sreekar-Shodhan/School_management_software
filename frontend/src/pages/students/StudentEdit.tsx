@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { studentServices } from '../../services/studentServices';
-import { Student, StudentUpdateInput } from '../../types/student';
+import { StudentFormData, StudentUpdateInput } from '../../interfaces/Student';
 
 const StudentEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [formData, setFormData] = useState<StudentUpdateInput>({
-    id: parseInt(id || '0'),
+  const [formData, setFormData] = useState<StudentFormData>({
+    id: id ? parseInt(id) : undefined,
     studentName: '',
     parentsName: '',
     rollNumber: '',
@@ -31,8 +31,8 @@ const StudentEdit: React.FC = () => {
       if (response.success && response.data) {
         setFormData({
           ...response.data,
-          dateOfBirth: response.data.dateOfBirth?.split('T')[0] || '',
-          schoolJoinedDate: response.data.schoolJoinedDate?.split('T')[0] || ''
+          dateOfBirth: response.data.dateOfBirth.split('T')[0],
+          schoolJoinedDate: response.data.schoolJoinedDate.split('T')[0]
         });
       } else {
         setError(response.error || 'Failed to load student');
@@ -47,10 +47,23 @@ const StudentEdit: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    if (!formData.id) return;
 
     try {
-      const response = await studentServices.updateStudent(formData);
+      // Convert form data to StudentUpdateInput
+      const updateData: StudentUpdateInput = {
+        id: formData.id,
+        studentName: formData.studentName || '',
+        parentsName: formData.parentsName || '',
+        rollNumber: formData.rollNumber || '',
+        class: formData.class || '',
+        section: formData.section || '',
+        schoolJoinedDate: formData.schoolJoinedDate || '',
+        dateOfBirth: formData.dateOfBirth || '',
+        phoneNumber: formData.phoneNumber || ''
+      };
+
+      const response = await studentServices.updateStudent(updateData);
       if (response.success) {
         navigate('/students');
       } else {
@@ -62,7 +75,7 @@ const StudentEdit: React.FC = () => {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -107,8 +120,8 @@ const StudentEdit: React.FC = () => {
                 type="text"
                 name="studentName"
                 id="studentName"
-                value={formData.studentName}
-                onChange={handleChange}
+                value={formData.studentName || ''}
+                onChange={handleInputChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 required
               />
@@ -122,8 +135,8 @@ const StudentEdit: React.FC = () => {
                 type="text"
                 name="parentsName"
                 id="parentsName"
-                value={formData.parentsName}
-                onChange={handleChange}
+                value={formData.parentsName || ''}
+                onChange={handleInputChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 required
               />
@@ -137,8 +150,8 @@ const StudentEdit: React.FC = () => {
                 type="text"
                 name="rollNumber"
                 id="rollNumber"
-                value={formData.rollNumber}
-                onChange={handleChange}
+                value={formData.rollNumber || ''}
+                onChange={handleInputChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 required
               />
@@ -152,8 +165,8 @@ const StudentEdit: React.FC = () => {
                 type="text"
                 name="class"
                 id="class"
-                value={formData.class}
-                onChange={handleChange}
+                value={formData.class || ''}
+                onChange={handleInputChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 required
               />
@@ -167,8 +180,8 @@ const StudentEdit: React.FC = () => {
                 type="text"
                 name="section"
                 id="section"
-                value={formData.section}
-                onChange={handleChange}
+                value={formData.section || ''}
+                onChange={handleInputChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 required
               />
@@ -182,8 +195,8 @@ const StudentEdit: React.FC = () => {
                 type="date"
                 name="schoolJoinedDate"
                 id="schoolJoinedDate"
-                value={formData.schoolJoinedDate}
-                onChange={handleChange}
+                value={formData.schoolJoinedDate || ''}
+                onChange={handleInputChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 required
               />
@@ -197,8 +210,8 @@ const StudentEdit: React.FC = () => {
                 type="date"
                 name="dateOfBirth"
                 id="dateOfBirth"
-                value={formData.dateOfBirth}
-                onChange={handleChange}
+                value={formData.dateOfBirth || ''}
+                onChange={handleInputChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 required
               />
@@ -212,8 +225,8 @@ const StudentEdit: React.FC = () => {
                 type="tel"
                 name="phoneNumber"
                 id="phoneNumber"
-                value={formData.phoneNumber}
-                onChange={handleChange}
+                value={formData.phoneNumber || ''}
+                onChange={handleInputChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 required
               />

@@ -1,16 +1,16 @@
 import axios from 'axios';
-import { Student, StudentCreateInput, StudentUpdateInput, StudentResponse, StudentsListResponse } from '../types/student';
+import { Student, StudentCreateInput, StudentUpdateInput, StudentResponse, StudentsListResponse } from '../interfaces/Student';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = 'http://localhost:8080/api';
 
 // Configure axios defaults
 const axiosInstance = axios.create({
     baseURL: API_URL,
-    withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
-    }
+    },
+    withCredentials: true
 });
 
 const logAxiosError = (error: any) => {
@@ -32,10 +32,10 @@ const logAxiosError = (error: any) => {
 
 export const studentServices = {
     // Create a new student
-    async createStudent(studentData: StudentCreateInput): Promise<StudentResponse> {
+    async createStudent(student: StudentCreateInput): Promise<StudentResponse> {
         try {
-            console.log('Creating student with data:', studentData);
-            const response = await axiosInstance.post('/students', studentData);
+            console.log('Creating student with data:', student);
+            const response = await axiosInstance.post('/students', student);
             console.log('Create student response:', response.data);
             return response.data;
         } catch (error: any) {
@@ -64,7 +64,6 @@ export const studentServices = {
     async getStudentById(id: number): Promise<StudentResponse> {
         try {
             console.log('Getting student by ID:', id);
-            console.log('API URL:', `${API_URL}/students/${id}`);
             const response = await axiosInstance.get(`/students/${id}`);
             console.log('Get student by ID response:', response.data);
             return response.data;
@@ -75,11 +74,10 @@ export const studentServices = {
     },
 
     // Update a student
-    async updateStudent(studentData: StudentUpdateInput): Promise<StudentResponse> {
+    async updateStudent(student: StudentUpdateInput): Promise<StudentResponse> {
         try {
-            console.log('Updating student with data:', studentData);
-            console.log('API URL:', `${API_URL}/students/${studentData.id}`);
-            const response = await axiosInstance.put(`/students/${studentData.id}`, studentData);
+            console.log('Updating student with data:', student);
+            const response = await axiosInstance.put(`/students/${student.id}`, student);
             console.log('Update student response:', response.data);
             return response.data;
         } catch (error: any) {
@@ -92,7 +90,6 @@ export const studentServices = {
     async deleteStudent(id: number): Promise<StudentResponse> {
         try {
             console.log('Deleting student with ID:', id);
-            console.log('API URL:', `${API_URL}/students/${id}`);
             const response = await axiosInstance.delete(`/students/${id}`);
             console.log('Delete student response:', response.data);
             return response.data;
